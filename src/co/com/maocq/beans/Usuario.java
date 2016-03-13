@@ -1,36 +1,42 @@
 package co.com.maocq.beans;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
 public class Usuario {
 
+	@Id
+	@Column(name="id")
+	private int id;
+	
+	@Column(name="nombre")
 	private String name;
+	
+	@Column(name="email")
 	private String email;
 
-	/**
-	 * @return the name
-	 */
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
 	public String getName() {
 		return name;
 	}
 
-	/**
-	 * @param name
-	 *            the name to set
-	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	/**
-	 * @return the email
-	 */
 	public String getEmail() {
 		return email;
 	}
 
-	/**
-	 * @param email
-	 *            the email to set
-	 */
 	public void setEmail(String email) {
 		this.email = email;
 	}
