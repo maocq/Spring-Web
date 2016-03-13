@@ -8,13 +8,13 @@ import javax.persistence.Id;
 public class Usuario {
 
 	@Id
-	@Column(name="id")
+	@Column(name = "id")
 	private int id;
-	
-	@Column(name="nombre")
+
+	@Column(name = "nombre")
 	private String name;
-	
-	@Column(name="email")
+
+	@Column(name = "email")
 	private String email;
 
 	public int getId() {
@@ -39,6 +39,11 @@ public class Usuario {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	@Override
+	public String toString() {
+		return "Usuario [id=" + id + ", name=" + name + ", email=" + email + "]";
 	}
 
 }
