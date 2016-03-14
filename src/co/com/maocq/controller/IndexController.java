@@ -2,6 +2,9 @@ package co.com.maocq.controller;
 
 import java.util.List;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -38,36 +41,43 @@ public class IndexController {
 		return gson.toJson(usuario);
 	}
 
-	@RequestMapping(value = "/basedatos", method = RequestMethod.POST, produces = (MediaType.APPLICATION_JSON_VALUE
+	@RequestMapping(value = "/usuario", method = RequestMethod.POST, produces = (MediaType.APPLICATION_JSON_VALUE
 			+ ";charset=utf-8"), consumes = (MediaType.APPLICATION_JSON_VALUE + ";charset=utf-8"))
-	public @ResponseBody String baseDatos(@RequestBody String request) {
+	public @ResponseBody String nuevoUsuario(@RequestBody String request) {
+
+		Usuario usuario = gson.fromJson(request, Usuario.class);
+
+		SessionFactory sessionFactory;
+
+		Configuration configuration = new Configuration();
+		configuration.configure();
+		ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties())
+				.buildServiceRegistry();
+		sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+
+		Session session = sessionFactory.openSession();
 
 		try {
-			Usuario usuario = gson.fromJson(request, Usuario.class);
-
-			SessionFactory sessionFactory;
-
-			Configuration configuration = new Configuration();
-			configuration.configure();
-			ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties())
-					.buildServiceRegistry();
-			sessionFactory = configuration.buildSessionFactory(serviceRegistry);
-
-			Session session = sessionFactory.openSession();
 
 			session.beginTransaction();
 			session.save(usuario);
 			session.getTransaction().commit();
 
+		} catch (ConstraintViolationException cve) {
+			session.getTransaction().rollback();
+
+			System.out.println("No se ha podido insertar el usuario debido a los siguientes errores:");
+			for (ConstraintViolation constraintViolation : cve.getConstraintViolations()) {
+				System.out.println("En el campo '" + constraintViolation.getPropertyPath() + "': "
+						+ constraintViolation.getMessage());
+			}
+			return gson.toJson(null);
+		} finally {
 			session.close();
 			sessionFactory.close();
-
-			return gson.toJson(usuario);
-
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			return gson.toJson(null);
 		}
+
+		return gson.toJson(usuario);
 
 	}
 
@@ -118,9 +128,11 @@ public class IndexController {
 
 			Session session = sessionFactory.openSession();
 
-            //Query query = session.createQuery("SELECT u FROM Usuario u");
-            Query query = session.getNamedQuery("findAllUsuarios");
-            List<Usuario> usuarios = query.list();
+			// Query query = session.createSQLQuery("SELECT * FROM usuario");
+
+			// Query query = session.createQuery("SELECT u FROM Usuario u");
+			Query query = session.getNamedQuery("findAllUsuarios");
+			List<Usuario> usuarios = query.list();
 
 			session.close();
 			sessionFactory.close();
