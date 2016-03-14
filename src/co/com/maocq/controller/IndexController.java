@@ -1,5 +1,8 @@
 package co.com.maocq.controller;
 
+import java.util.List;
+
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -90,6 +93,39 @@ public class IndexController {
 			sessionFactory.close();
 
 			return gson.toJson(usuario);
+
+		} catch (Exception e) {
+			System.out.println("ERROR: " + e.getMessage());
+			return gson.toJson(null);
+		}
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/hql", method = RequestMethod.GET, produces = (MediaType.APPLICATION_JSON_VALUE
+			+ ";charset=utf-8"))
+	public @ResponseBody String hql() {
+
+		try {
+
+			SessionFactory sessionFactory;
+
+			Configuration configuration = new Configuration();
+			configuration.configure();
+			ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties())
+					.buildServiceRegistry();
+			sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+
+			Session session = sessionFactory.openSession();
+
+            //Query query = session.createQuery("SELECT u FROM Usuario u");
+            Query query = session.getNamedQuery("findAllUsuarios");
+            List<Usuario> usuarios = query.list();
+
+			session.close();
+			sessionFactory.close();
+
+			return gson.toJson(usuarios);
 
 		} catch (Exception e) {
 			System.out.println("ERROR: " + e.getMessage());

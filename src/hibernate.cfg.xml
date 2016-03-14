@@ -10,6 +10,8 @@
     <property name="hibernate.show_sql">true</property>
 
     <mapping class="co.com.maocq.beans.Usuario"/>
+    
+    <mapping resource="co/com/maocq/controller/index.hbm.xml"/>
 
   </session-factory>
 </hibernate-configuration>
