@@ -2,6 +2,9 @@ package co.com.maocq.controller;
 
 import java.util.List;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.http.MediaType;
@@ -34,18 +37,29 @@ public class IndexController {
 		return gson.toJson(usuario);
 	}
 
+	@SuppressWarnings("rawtypes")
 	@RequestMapping(value = "/usuario", method = RequestMethod.POST, produces = (MediaType.APPLICATION_JSON_VALUE
 			+ ";charset=utf-8"), consumes = (MediaType.APPLICATION_JSON_VALUE + ";charset=utf-8"))
 	public @ResponseBody String nuevoUsuario(@RequestBody String request) {
 
 		Usuario usuario = gson.fromJson(request, Usuario.class);
-
 		Session session = HibernateUtil.getSessionFactory().getCurrentSession();
-		session.beginTransaction();
-		session.save(usuario);
-		session.getTransaction().commit();
+		try {
 
-		return gson.toJson(usuario);
+			session.beginTransaction();
+			session.save(usuario);
+			session.getTransaction().commit();
+
+			return gson.toJson(usuario);
+		} catch (ConstraintViolationException cve) {
+			session.getTransaction().rollback();
+
+			for (ConstraintViolation constraintViolation : cve.getConstraintViolations()) {
+				System.out.println("En el campo '" + constraintViolation.getPropertyPath() + "':"
+						+ constraintViolation.getMessage());
+			}
+			return gson.toJson(null);
+		}
 
 	}
 
@@ -57,6 +71,16 @@ public class IndexController {
 		Usuario usuario = (Usuario) session.get(Usuario.class, idUsuario);
 		session.close();
 		return gson.toJson(usuario);
+
+		/*
+		 * Otra forma, con getCurrentSession()
+		 */
+		// Session session =
+		// HibernateUtil.getSessionFactory().getCurrentSession();
+		// session.beginTransaction();
+		// Usuario usuario = (Usuario) session.get(Usuario.class, idUsuario);
+		// session.getTransaction().commit();
+		// return gson.toJson(usuario);
 
 	}
 
