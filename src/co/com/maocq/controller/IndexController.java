@@ -21,20 +21,14 @@ import co.com.maocq.beans.Usuario;
 import co.com.maocq.util.hibernate.HibernateUtil;
 
 @Controller
-@RequestMapping(value = "/api")
 public class IndexController {
 
 	final static Gson gson = new Gson();
 
-	@RequestMapping(value = "/", method = RequestMethod.GET, produces = (MediaType.APPLICATION_JSON_VALUE
-			+ ";charset=utf-8"))
-	public @ResponseBody String index() {
-
-		Usuario usuario = new Usuario();
-		usuario.setName("Mauricio");
-		usuario.setEmail("carmonaesc@gmail.com");
-
-		return gson.toJson(usuario);
+	@RequestMapping(value = "/", method = RequestMethod.GET)
+	public String index() {
+		
+		return "index";
 	}
 
 	@SuppressWarnings("rawtypes")
