@@ -23,6 +23,7 @@ public class Usuario {
 	@Column(name = "nombre")
 	private String name;
 
+    @NotNull
 	@Column(name = "email")
 	private String email;
 

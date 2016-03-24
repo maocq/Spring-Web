@@ -1,9 +1,14 @@
 package co.com.maocq.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -18,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 
 import co.com.maocq.beans.Usuario;
+import co.com.maocq.util.error.ErrorResponse;
 import co.com.maocq.util.hibernate.HibernateUtil;
 
 @Controller
@@ -27,33 +33,33 @@ public class IndexController {
 
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public String index() {
-		
+
 		return "index";
 	}
 
-	@SuppressWarnings("rawtypes")
 	@RequestMapping(value = "/usuario", method = RequestMethod.POST, produces = (MediaType.APPLICATION_JSON_VALUE
 			+ ";charset=utf-8"), consumes = (MediaType.APPLICATION_JSON_VALUE + ";charset=utf-8"))
 	public @ResponseBody String nuevoUsuario(@RequestBody String request) {
 
-		Usuario usuario = gson.fromJson(request, Usuario.class);
-		Session session = HibernateUtil.getSessionFactory().getCurrentSession();
-		try {
+		Usuario usuario = gson.fromJson(request, Usuario.class);		
 
-			session.beginTransaction();
-			session.save(usuario);
-			session.getTransaction().commit();
-
-			return gson.toJson(usuario);
-		} catch (ConstraintViolationException cve) {
-			session.getTransaction().rollback();
-
-			for (ConstraintViolation constraintViolation : cve.getConstraintViolations()) {
-				System.out.println("En el campo '" + constraintViolation.getPropertyPath() + "':"
-						+ constraintViolation.getMessage());
-			}
-			return gson.toJson(null);
+		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+		Validator validator = factory.getValidator();
+		Set<ConstraintViolation<Usuario>> constraintViolations = validator.validate(usuario);
+		if (!constraintViolations.isEmpty()) {
+			Map<String, String> errores = new HashMap<>();
+			for (ConstraintViolation<Usuario> constraintViolation : constraintViolations) 
+				errores.put(constraintViolation.getPropertyPath().toString(), constraintViolation.getMessage());
+			
+			return gson.toJson(new ErrorResponse(true, errores));
 		}
+
+		Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+		session.beginTransaction();
+		session.save(usuario);
+		session.getTransaction().commit();
+
+		return gson.toJson(usuario);
 
 	}
 
