@@ -1,5 +1,7 @@
 package co.com.maocq.controller;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,8 @@ import com.google.gson.Gson;
 
 import co.com.maocq.beans.Usuario;
 import co.com.maocq.util.error.ErrorResponse;
+import co.com.maocq.util.excel.ExcelIterador;
+import co.com.maocq.util.excel.ExcelUtil;
 import co.com.maocq.util.hibernate.HibernateUtil;
 
 @Controller
@@ -41,16 +45,16 @@ public class IndexController {
 			+ ";charset=utf-8"), consumes = (MediaType.APPLICATION_JSON_VALUE + ";charset=utf-8"))
 	public @ResponseBody String nuevoUsuario(@RequestBody String request) {
 
-		Usuario usuario = gson.fromJson(request, Usuario.class);		
+		Usuario usuario = gson.fromJson(request, Usuario.class);
 
 		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 		Validator validator = factory.getValidator();
 		Set<ConstraintViolation<Usuario>> constraintViolations = validator.validate(usuario);
 		if (!constraintViolations.isEmpty()) {
 			Map<String, String> errores = new HashMap<>();
-			for (ConstraintViolation<Usuario> constraintViolation : constraintViolations) 
+			for (ConstraintViolation<Usuario> constraintViolation : constraintViolations)
 				errores.put(constraintViolation.getPropertyPath().toString(), constraintViolation.getMessage());
-			
+
 			return gson.toJson(new ErrorResponse(true, errores));
 		}
 
@@ -105,6 +109,37 @@ public class IndexController {
 		} catch (Exception e) {
 			System.out.println("ERROR: " + e.getMessage());
 			return gson.toJson(null);
+		}
+
+	}
+
+	@RequestMapping(value = "/leerExcel", method = RequestMethod.GET, produces = (MediaType.APPLICATION_JSON_VALUE
+			+ ";charset=utf-8"))
+	public @ResponseBody String leerExcel() {
+		try {
+			File file = new File("C:\\Users/John M. Carmona/Desktop/prueba.xlsx");
+			// (new ExcelUtil(file)).getLibro();
+			ExcelUtil excelUtil = new ExcelUtil(file).getLibro().getHoja(0);
+
+			excelUtil.recorrerHoja(new ExcelIteradorImp(), 4);
+			// String[][] matriz = excelU.getMatriz();
+
+			return gson.toJson(null);
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+			return gson.toJson(null);
+		}
+	}
+
+	/*
+	 * Iterador Excel
+	 */
+	public class ExcelIteradorImp implements ExcelIterador {
+		@Override
+		public void iteracion(String[] iteracion, int numIteracion) {
+			System.out.println(iteracion.length);
+			System.out.println(iteracion[0]);
+			System.out.println(iteracion[1]);
 		}
 
 	}
