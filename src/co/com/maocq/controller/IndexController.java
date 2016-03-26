@@ -30,6 +30,7 @@ import co.com.maocq.util.error.ErrorResponse;
 import co.com.maocq.util.excel.ExcelIterador;
 import co.com.maocq.util.excel.ExcelUtil;
 import co.com.maocq.util.hibernate.HibernateUtil;
+import co.com.maocq.util.mail.SendMail;
 
 @Controller
 public class IndexController {
@@ -171,6 +172,15 @@ public class IndexController {
 		long fin = System.currentTimeMillis();
 
 		System.out.println( (fin - inicio)/1000 );
+		return gson.toJson(null);
+	}
+	
+	@RequestMapping(value = "/mail", method = RequestMethod.GET, produces = (MediaType.APPLICATION_JSON_VALUE
+			+ ";charset=utf-8"))
+	public @ResponseBody String mail() {
+		
+		SendMail.send("xyz0@gmail.com", "Saludo", "Hola =)");
+		
 		return gson.toJson(null);
 	}
 
