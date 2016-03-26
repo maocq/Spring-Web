@@ -14,6 +14,7 @@ import javax.validation.ValidatorFactory;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -99,7 +100,8 @@ public class IndexController {
 			// Query query = session.createSQLQuery("SELECT * FROM usuario");
 
 			// Query query = session.createQuery("SELECT u FROM Usuario u");
-			Query query = session.getNamedQuery("findAllUsuarios");
+			Query query = session.getNamedQuery("findAllUsuarios")
+					.setMaxResults(100);
 			List<Usuario> usuarios = query.list();
 
 			session.close();
@@ -142,6 +144,34 @@ public class IndexController {
 			System.out.println(iteracion[1]);
 		}
 
+	}
+
+	@RequestMapping(value = "/lote", method = RequestMethod.GET, produces = (MediaType.APPLICATION_JSON_VALUE
+			+ ";charset=utf-8"))
+	public @ResponseBody String lote() {
+
+		long inicio = System.currentTimeMillis();
+
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		Transaction tx = session.beginTransaction();
+
+		for (int i = 0; i < 100000; i++) {
+			Usuario us = new Usuario();
+			us.setName("Mauricio " + i);
+			us.setEmail("carmonaesc" + i + "@gmail.com");
+			session.save(us);
+			if (i % 20 == 0) {
+				session.flush();
+				session.clear();
+			}
+		}
+		tx.commit();
+		session.close();
+
+		long fin = System.currentTimeMillis();
+
+		System.out.println( (fin - inicio)/1000 );
+		return gson.toJson(null);
 	}
 
 }
